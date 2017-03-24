@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>EasyID signing demo</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="/scripts/jwt-decode.js"></script>
+    <script src="/scripts/easyid.js"></script>
+  </head>
+  <body>
+    <h2>EasyID signing demo</h2>
+    <p>You have two options for using signing with easyID:</p>
+    <ul>
+      <li>The signing result is returned to you through postMessage. This may be useful when the
+        signing occurs inside an iframe of your page.</li>
+      <li>The signing result is posted to a URL provided by you.</li>
+    </ul>
+    <p>This demo illustrates both approaches.</p>
+    <div>
+      <textarea id="signtext" placeholder="Enter the text you want to sign" cols="80" rows="8" onchange="enableButton()" onkeyup="enableButton()"></textarea>
+    </div>
+    <select  id="signmethod">
+      <option value="urn:grn:authn:dk:nemid:poces">DK NemID personal</option>
+      <option value="urn:grn:authn:dk:nemid:moces">DK NemID employee code card</option>
+      <option value="urn:grn:authn:dk:nemid:moces:codefile">DK NemID employee code file</option>
+      <option value="urn:grn:authn:no:bankid:central">NO BankID hardware token</option>
+      <option value="urn:grn:authn:no:bankid:mobile">NO BankID mobile</option>
+      <option value="urn:grn:authn:se:bankid:same-device">SE BankID same device</option>
+      <option value="urn:grn:authn:se:bankid:another-device">SE BankID another device</option>
+    </select>
+    <button id="signbutton" onclick="signNow()" disabled>Sign the text</button>
+    </br></br>
+    
+    <iframe id="signhere" style="display:block" width="600px" height="500px" frameborder="0"></iframe>
+
+    <div id="tokendisplay" style="display:none">
+      <h3>Response from underlying native signing service:</h3>
+      <textarea id="evidence" rows="20" style="width:100%; border:none"></textarea>
+      <br/>
+
+      <h3>The complete response, a Base64 encoded JWT, from easyID (save for future proof):</h3>
+      <textarea id="jwt" rows="20" style="width:100%; border:none"></textarea>
+      <p><em>Take the entire response to <a href="https://jwt.io" target="_blank">JWT.io</a> for easy decoding.</em></p>
+      <p>This response is encoded as a JWT containing the signature response from the underlying native signing service. 
+        The JWT is signed by the easyID token signing certificate for your easyID tenant, also used when issueing 
+        authentication tokens. The easyID signed JWT contains both the signed text and the native signature and should be saved 
+        to allow for future verication that the user actually did sign.
+      </p>
+    </div>
+
+    <script>
+      function enableButton(e) {
+        document.getElementById("signbutton").disabled = document.getElementById("signtext").value.length <= 0;
+      }
+
+      var domain = "acme-corp.grean.id";
+      var clientID = "urn:easyid:login-demo";
+      var easyID = new EasyID(domain, clientID);
+
+      function signNow() {
+        var selected = document.getElementById("signmethod");
+        const options = {
+            signMethod: selected.options[selected.selectedIndex].value,
+            iframeID: "signhere"
+        };
+    // Supply a callback function to have the result delivered right here in front end ...
+        easyID.sign(document.getElementById("signtext").value, options, function (err, response) {
+            if (!err) {
+              // This is where you process the signature result
+              doSomethingWithSignature(response);  
+            }
+        });
+      }
+
+      function doSomethingWithSignature(response) {
+          var token = jwt_decode(response);
+          var signedText = token.signtext;
+
+          document.getElementById("signhere").style.display = "none";
+          document.getElementById("tokendisplay").style.display = "block";
+          document.getElementById("evidence").value = window.atob(token.evidence);
+          document.getElementById("jwt").value = response;
+      }
+    </script>
+  </body>
+</html>
