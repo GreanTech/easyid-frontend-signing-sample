@@ -75,7 +75,7 @@ function signatureReceiver(domain, done) {
     return function (e) {
         if (e && e.data) {
             console.log("Received postMessage event with signature (event origin " + e.origin + ")");
-            let eventOrigin = ensureSlashTerminated(e.origin);
+            var eventOrigin = ensureSlashTerminated(e.origin);
             if (eventOrigin.toLowerCase() === trustedOrigin.toLowerCase()) {
                 console.log("Message is from trusted authority " + trustedOrigin);
                 callback(null, e.data.signature);
