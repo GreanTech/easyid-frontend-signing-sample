@@ -29,7 +29,7 @@ function EasyID(domain, clientID) {
                 .replace('{{clientID}}', clientID)
                 .replace('{{replyUrl}}', replyUrl)
                 .replace('{{signMethod}}', options.signMethod)
-                .replace('{{signText}}', window.btoa(text))
+                .replace('{{signText}}', window.btoa(unescape(encodeURIComponent(text))))
                 .replace('{{strategy}}', 'postMessage');
         }
         else if (typeof action === 'string') {
@@ -43,7 +43,7 @@ function EasyID(domain, clientID) {
                 .replace('{{clientID}}', clientID)
                 .replace('{{replyUrl}}', action)
                 .replace('{{signMethod}}', options.signMethod)
-                .replace('{{signText}}', window.btoa(text))
+                .replace('{{signText}}', window.btoa(unescape(encodeURIComponent(text))))
                 .replace('{{strategy}}', 'formPost');
             if (iframe) {
                 ifrmae.src = url;
