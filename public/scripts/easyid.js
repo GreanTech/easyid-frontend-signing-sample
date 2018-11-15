@@ -5,6 +5,10 @@ function EasyID(domain, clientID) {
     this._domain = domain;
     this._cientID = clientID;
     this.sign = function (text, options, action) {
+        // HACK: NO BankID expects an ISO-8859-1 encoding which is hard to get by. 
+        // But fortunately window.btoa() is broken in just the right way to mimic ISO-8859-1 - it seems!
+        var encSignText = options.signMethod.startsWith('urn:grn:authn:no:bankid') ?
+                            window.btoa(text) : Base64Encode(text, 'utf-8')
         if (typeof action === 'function') {
             if (!options.iframeID) {
                 var err = new Error('Callback cannot be used without iframe. Please specify ID of iframe');
@@ -28,7 +32,7 @@ function EasyID(domain, clientID) {
                 .replace('{{clientID}}', clientID)
                 .replace('{{replyUrl}}', replyUrl)
                 .replace('{{signMethod}}', options.signMethod)
-                .replace('{{signText}}', Base64Encode(text))
+                .replace('{{signText}}', encSignText)
                 .replace('{{strategy}}', 'postMessage');
         }
         else if (typeof action === 'string') {
@@ -42,7 +46,7 @@ function EasyID(domain, clientID) {
                 .replace('{{clientID}}', clientID)
                 .replace('{{replyUrl}}', action)
                 .replace('{{signMethod}}', options.signMethod)
-                .replace('{{signText}}', Base64Encode(text))
+                .replace('{{signText}}', encSignText)
                 .replace('{{strategy}}', 'formPost');
             if (iframe) {
                 ifrmae.src = url;
