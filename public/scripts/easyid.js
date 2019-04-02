@@ -8,7 +8,7 @@ function EasyID(domain, clientID) {
         // HACK: NO BankID expects an ISO-8859-1 encoding which is hard to get by. 
         // But fortunately window.btoa() is broken in just the right way to mimic ISO-8859-1 - it seems!
         var encSignText = options.signMethod.startsWith('urn:grn:authn:no:bankid') ?
-                            window.btoa(text) : Base64Encode(text, 'utf-8')
+                            window.encodeURIComponent(window.btoa(text)) : Base64Encode(text, 'utf-8')
         if (typeof action === 'function') {
             if (!options.iframeID) {
                 var err = new Error('Callback cannot be used without iframe. Please specify ID of iframe');
